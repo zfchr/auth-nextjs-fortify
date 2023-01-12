@@ -17,8 +17,12 @@ interface setStatus {
 }
 interface loginProps extends errorType, setStatus{
     
-
-    
+}
+interface ForgotPasswordProps extends errorType, setStatus {
+    email: string
+}
+interface ResetPasswordProps extends errorType {
+    email: string
 }
 
 export default function useAuth({middleware, redirectIfAuthenticated}: useAuthProps = {}) {
@@ -27,7 +31,7 @@ export default function useAuth({middleware, redirectIfAuthenticated}: useAuthPr
     const {data: user, error, mutate} = useSWR('/api/user', () =>
     axios('/api/user')
     .then((res) => res.data) 
-    .catch(error => {
+    .catch((error) => {
         if (error.response.status !== 403) throw error; 
         router.push('/verify-email')
             
@@ -99,6 +103,53 @@ export default function useAuth({middleware, redirectIfAuthenticated}: useAuthPr
 
     }, [user, error]);
 
+    const resendEmailVerification = async ({setStatus}: setStatus) =>  {
+        const response = await axios.post('/email/verification-notification')
+        if (response.status == 202) {
+            setStatus('verification-link-sent');
+            
+        }
+    }
+
+    const forgotPassword = async ({setStatus, setErrors, email}: ForgotPasswordProps) => {
+        await csrf();
+        setErrors([])
+        setStatus('')
+
+        try {
+            await axios.post('/forgot-password', {email})
+            setStatus('password-reset-link-sent')
+            
+        } catch (error: any) {
+
+            if (error?.response?.status !== 422 ) throw error;
+        setErrors(error?.response?.data?.errors)
+
+            
+        }
+
+    }
+    const resetPassword  = async ({setErrors, ...props}: ResetPasswordProps) => {
+        await csrf();
+        setErrors([])
+       
+
+        try {
+            await axios.post('/reset-password', props)
+            await mutate()
+            router.push('/login?status=password-reset-success')
+            
+        } catch (error: any) {
+
+            if (error?.response?.status !== 422 ) throw error;
+        setErrors(error?.response?.data?.errors)
+
+            
+        }
+
+    }
+
+
 
     return  {
         register ,
@@ -106,6 +157,9 @@ export default function useAuth({middleware, redirectIfAuthenticated}: useAuthPr
         mutate,
         logout,
         login,
+        resendEmailVerification,
+        resetPassword,
+        forgotPassword
 
     }
 

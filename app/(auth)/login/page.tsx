@@ -6,9 +6,9 @@ import PrimaryButton from "@/components/PrimaryButton";
 import TextInput from "@/components/TextInput";
 import useAuth from "@/hooks/useAuth";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-export default function page() {
+export default function page({searchParams}: any) {
 
   const {login} = useAuth({
     redirectIfAuthenticated: '/dashboard',
@@ -43,6 +43,15 @@ export default function page() {
 
   }
 
+  useEffect( () => {
+    if (searchParams?.status) {
+      setStatus(searchParams?.status)
+      
+    } else {
+      setStatus('')
+    }
+  })
+
   
   return (
     <Card>
@@ -54,6 +63,12 @@ export default function page() {
          Login if you have an account, <Link className='underline text-slate-400' href={"/register"}>Register</Link> if you dont't have an account
         </Card.Subtitle>
       </Card.Header>
+
+      {status && status == 'password-reset-success' && (
+         <div className={'text-sm font-medium text-green-500 mb-5'}>
+         Your password has been reset. You can login with your new password.
+      </div>
+      )}
 
       <form onSubmit={submit}>
 
@@ -76,15 +91,17 @@ export default function page() {
 
         </div>
 
-        
-       
-        <div className='mb-5'>
+        <div className='flex items-center justify-end gap-x-3'>
+          <Link className='underline text-slate-500' href={"/forgot-password"}>
+            Forgot Password
+          </Link>
           <PrimaryButton>
-            Register
+            Login
           </PrimaryButton>
         </div>
-     
 
+        
+    
         
 
       </form>
