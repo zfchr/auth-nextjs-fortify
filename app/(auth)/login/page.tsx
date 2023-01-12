@@ -1,10 +1,49 @@
+'use client'
 import Card from "@/components/Card";
+import InputError from "@/components/InputError";
 import InputLabel from "@/components/InputLabel";
 import PrimaryButton from "@/components/PrimaryButton";
 import TextInput from "@/components/TextInput";
+import useAuth from "@/hooks/useAuth";
 import Link from "next/link";
+import { useState } from "react";
 
 export default function page() {
+
+  const {login} = useAuth({
+    redirectIfAuthenticated: '/dashboard',
+    middleware: 'guest'
+  })
+
+
+  const [errors, setErrors ] = useState<any>([]);
+  const [status, setStatus] = useState<string>('');
+  
+  const [form, setForm] = useState(
+    {
+      email: '',
+      password: ''
+    }
+  )
+  const onChange = (e: { target:  {name : string; value: string }}) => {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value,
+
+    });
+  };
+
+  const submit = (e: { preventDefault: () => void; }) => {
+    e.preventDefault();
+    login({
+      ...form,
+      setStatus,
+      setErrors
+    })
+
+  }
+
+  
   return (
     <Card>
       <Card.Header>
@@ -16,7 +55,7 @@ export default function page() {
         </Card.Subtitle>
       </Card.Header>
 
-      <form>
+      <form onSubmit={submit}>
 
     
 
@@ -24,14 +63,17 @@ export default function page() {
           <InputLabel htmlFor={'email'}>
               Email
           </InputLabel>
-          <TextInput type={'email'} id={'email'} />
+          <TextInput onChange={onChange} value={form.email} name='email' type={'email'} id={'email'} />
+          <InputError message={errors?.email}/>
         </div>
-
+ 
         <div className='mb-5'>
           <InputLabel htmlFor={'password'}>
               Password
           </InputLabel>
-          <TextInput type={'password'} id={'password'} />
+          <TextInput onChange={onChange} value={form.password} name='password' type={'password'} id={'password'} />
+          <InputError message={errors?.password}/>
+
         </div>
 
         

@@ -13,7 +13,7 @@ import InputError from "@/components/InputError";
 export default function Register() {
   const {register} = useAuth({
     middleware: 'guest',
-    redirectIfAuthenticated: '/dashboarsd'
+    redirectIfAuthenticated: '/dashboard'
     
   });
 
